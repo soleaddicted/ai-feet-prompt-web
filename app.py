@@ -41,7 +41,7 @@ def generate_prompt(is_nsfw, vibe):
     return prompt
 
 # --- Streamlit UI ---
-st.set_page_config(page_title="Feet Prompt Generator", page_icon="🦶")
+st.set_page_config(page_title="Addicted Soles Generator 👣", page_icon="🌸")
 st.title("🦶 AI Feet Prompt Generator")
 st.markdown("Generate creative, themed AI prompts for feet content.")
 
