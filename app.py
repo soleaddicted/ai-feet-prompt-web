@@ -3,27 +3,41 @@ import random
 import requests
 from io import BytesIO
 from PIL import Image
+import base64
 
-# Your existing prompt generator code here...
+# -------------------------
+# Load your API key securely
+# -------------------------
+api_key = st.secrets["stability"]["api_key"]
 
-# Sample prompt generation function (simplified)
-def generate_prompt():
-    descriptors = ["soft", "pretty", "delicate"]
-    toes = ["red polished toes", "light pink toes"]
-    settings = ["in a milk bath", "on a spa towel"]
-    return f"{random.choice(descriptors)} feet with {random.choice(toes)}, {random.choice(settings)}"
-
+# -------------------------
+# Password protection for Fanvue subscribers
+# -------------------------
 st.title("🦶 AI Feet Prompt & Image Generator")
+st.markdown("### 🔐 Subscribers Only")
+password = st.text_input("Enter your access code:", type="password")
+if password != "divinesoles123":
+    st.warning("🚫 This prompt generator is for paying Fanvue subscribers only.")
+    st.stop()
+
+# -------------------------
+# Prompt generator function
+# -------------------------
+def generate_prompt():
+    descriptors = ["soft", "pretty", "delicate", "sultry"]
+    toes_styles = ["red polished toes", "light pink toes", "french tips"]
+    settings = ["in a milk bath", "on a spa towel", "with rose petals"]
+    return f"{random.choice(descriptors)} feet with {random.choice(toes_styles)}, {random.choice(settings)}"
 
 prompt = generate_prompt()
-
 st.markdown(f"### Generated Prompt:\n*{prompt}*")
 
+# -------------------------
+# Generate image button
+# -------------------------
 if st.button("Generate Image"):
     st.markdown("Generating image, please wait...")
 
-    # Call Stability API
-    api_key = "YOUR_STABILITY_API_KEY"
     url = "https://api.stability.ai/v1/generation/stable-diffusion-v1-5/text-to-image"
 
     headers = {
@@ -50,4 +64,5 @@ if st.button("Generate Image"):
         st.image(image, caption="AI Generated Feet Art")
     else:
         st.error(f"Image generation failed: {response.text}")
+
 
