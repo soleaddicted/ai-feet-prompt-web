@@ -1,64 +1,53 @@
 import streamlit as st
 import random
+import requests
+from io import BytesIO
+from PIL import Image
 
-# ------------------------------------------
-# 🔐 ACCESS CODE LOCK FOR FANVUE SUBSCRIBERS
-# ------------------------------------------
-st.set_page_config(page_title="Feet Prompt Generator", page_icon="🦶")
-st.title("🦶 AI Feet Prompt Generator")
+# Your existing prompt generator code here...
 
-# Lock the generator behind a password
-st.markdown("### 🔐 Subscribers Only")
-password = st.text_input("Enter your access code:", type="password")
+# Sample prompt generation function (simplified)
+def generate_prompt():
+    descriptors = ["soft", "pretty", "delicate"]
+    toes = ["red polished toes", "light pink toes"]
+    settings = ["in a milk bath", "on a spa towel"]
+    return f"{random.choice(descriptors)} feet with {random.choice(toes)}, {random.choice(settings)}"
 
-# Replace this with your Fanvue password
-if password != "divinesoles123":
-    st.warning("🚫 This prompt generator is for paying Fanvue subscribers only.")
-    st.stop()
+st.title("🦶 AI Feet Prompt & Image Generator")
 
-# ------------------------------------------
-# ✨ PROMPT OPTIONS
-# ------------------------------------------
-descriptors = ["soft", "pretty", "delicate", "sultry", "well-moisturized", "girly"]
-toes_styles = ["light pink toes", "red polished toes", "french tips", "white-painted toes"]
+prompt = generate_prompt()
 
-sfw_settings = ["in a milk bath", "on a satin pillow", "on a spa towel"]
-nsfw_settings = [
-    "with whipped cream", "gripping a banana", "dripping in oil",
-    "wrapped in latex straps", "with melted chocolate"
-]
+st.markdown(f"### Generated Prompt:\n*{prompt}*")
 
-angles = ["from the soles", "with curled toes", "scrunched", "tiptoed", "spread"]
+if st.button("Generate Image"):
+    st.markdown("Generating image, please wait...")
 
-style_vibes = {
-    "Romantic": ["soft lighting", "rose petals", "silky textures"],
-    "Taboo": ["forbidden feel", "moody shadows", "close-up shot"],
-    "Goddess": ["gold accessories", "worship position", "elevated angle"],
-    "Playful": ["fun colors", "lollipop toes", "glitter background"],
-    "Glamorous": ["high heels", "expensive jewelry", "lux setting"],
-    "Submissive": ["bound ankles", "kneeling position", "humble mood"]
-}
+    # Call Stability API
+    api_key = "YOUR_STABILITY_API_KEY"
+    url = "https://api.stability.ai/v1/generation/stable-diffusion-v1-5/text-to-image"
 
-# ------------------------------------------
-# 🔮 PROMPT GENERATOR FUNCTION
-# ------------------------------------------
-def generate_prompt(is_nsfw, vibe):
-    setting_pool = sfw_settings + nsfw_settings if is_nsfw else sfw_settings
-    vibe_addons = style_vibes.get(vibe, [])
-    prompt = f"{random.choice(descriptors)} feet with {random.choice(toes_styles)}, "
-    prompt += f"{random.choice(setting_pool)}, {random.choice(angles)}"
-    if vibe_addons:
-        prompt += f", {random.choice(vibe_addons)}"
-    return prompt
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
 
-# ------------------------------------------
-# 🎛️ USER INPUTS
-# ------------------------------------------
-is_nsfw = st.toggle("🔞 NSFW Mode", value=False)
-vibe = st.selectbox("🎨 Style / Vibe", list(style_vibes.keys()))
+    json_data = {
+        "text_prompts": [{"text": prompt}],
+        "cfg_scale": 7,
+        "clip_guidance_preset": "FAST_BLUE",
+        "height": 512,
+        "width": 512,
+        "samples": 1,
+        "steps": 30
+    }
 
-# ------------------------------------------
-# 🪄 GENERATE PROMPT
-# ------------------------------------------
-if st.button("✨ Generate Prompt"):
-    st.success(generate_prompt(is_nsfw, vibe))
+    response = requests.post(url, headers=headers, json=json_data)
+
+    if response.status_code == 200:
+        data = response.json()
+        image_data = data['artifacts'][0]['base64']
+        image = Image.open(BytesIO(base64.b64decode(image_data)))
+        st.image(image, caption="AI Generated Feet Art")
+    else:
+        st.error(f"Image generation failed: {response.text}")
+
